@@ -40,7 +40,8 @@ config = {
             port: '2368'
         },
         paths: {
-            contentPath: path.join(__dirname, '/content/')
+            contentPath: path.join(__dirname, '/content/'),
+	    contentStore: 'local' // Alternates: 'manta' for Joyent Object Storage
         }
     },
 
