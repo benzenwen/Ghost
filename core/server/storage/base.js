@@ -28,16 +28,19 @@ baseStore = {
 
         filename = path.join(dir, name + append + ext);
 
-        store.exists(filename).then(function (exists) {
-            if (exists) {
-                setImmediate(function () {
-                    i = i + 1;
-                    self.generateUnique(store, dir, name, ext, i, done);
-                });
-            } else {
-                done.resolve(filename);
-            }
-        });
+        // store.exists(filename).then(function (exists) {
+        //     if (exists) {
+        //         setImmediate(function () {
+        //             i = i + 1;
+        //             self.generateUnique(store, dir, name, ext, i, done);
+        //         });
+        //     } else {
+        //         done.resolve(filename);
+        //     }
+        // });
+
+	// FIXME TOTAL HACK
+	done.resolve(filename);
     },
     'getUniqueFileName': function (store, image, targetDir) {
         var done = when.defer(),

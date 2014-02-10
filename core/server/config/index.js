@@ -17,6 +17,8 @@ var path          = require('path'),
 function updateConfig(config) {
     var localPath,
         contentPath,
+        contentStore,
+        mantaConfig,
         subdir;
 
     // Merge passed in config object onto
@@ -42,6 +44,8 @@ function updateConfig(config) {
     // Allow contentPath to be over-written by passed in config object
     // Otherwise default to default content path location
     contentPath = ghostConfig.paths.contentPath || path.resolve(appRoot, 'content');
+    contentStore = ghostConfig.paths.contentStore || 'local';
+    mantaConfig = ghostConfig.paths.manta || { 'rootDir':  '/public/ghost' };
 
     _.merge(ghostConfig, {
         paths: {
@@ -52,10 +56,12 @@ function updateConfig(config) {
             'corePath':         corePath,
 
             'contentPath':      contentPath,
+	    'contentStore':     contentStore,
             'themePath':        path.resolve(contentPath, 'themes'),
             'appPath':          path.resolve(contentPath, 'apps'),
             'imagesPath':       path.resolve(contentPath, 'images'),
             'imagesRelPath':    'content/images',
+	    'manta':            mantaConfig,
 
             'adminViews':       path.join(corePath, '/server/views/'),
             'helperTemplates':  path.join(corePath, '/server/helpers/tpl/'),

@@ -42,6 +42,13 @@ config = {
         paths: {
             contentPath: path.join(__dirname, '/content/'),
 	    contentStore: 'local' // Alternates: 'manta' for Joyent Object Storage
+            manta: {
+		// If using Manta Object Store for images... 
+		// Root of image directory in Manta, relative :userid.  Default: /public/ghost
+		// Currently expects these environment variables: MANTA_USER, MANTA_URL, MANTA_KEY_ID; 
+		// and ssh key in .ssh
+		rootDir: '/public/ghost'
+	    }
         }
     },
 
