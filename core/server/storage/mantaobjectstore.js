@@ -5,6 +5,7 @@ var _       = require('lodash'),
     express = require('express'),
     fs      = require('fs-extra'),
     nodefn  = require('when/node/function'),
+    nodecb  = require('when/callbacks'),
     path    = require('path'),
     when    = require('when'),
     errors  = require('../errorHandling'),
@@ -20,7 +21,7 @@ mantaObjectStore = _.extend(baseStore, {
     'mantaClient': undefined,
     'createMantaClient': function () {
 	// FIXME This should be created at an initialization step on get_storage in parent.
-	// createBinClient requires bunyan logger.
+	// createBinClient requires bunyan logger.  createBinClient automatically uses ssh-agent as needed.
 	var self = this,
 	    url  = process.env.MANTA_URL || 'http://localhost:8080',
 	    user = process.env.MANTA_USER || 'admin',
@@ -34,9 +35,8 @@ mantaObjectStore = _.extend(baseStore, {
 		user: user,
 		log: mantaLog
 	    };
-	// DELETEME mantaLog.level(bunyan.DEBUG);
-	self.mantaClient = manta.createBinClient(opts); 
 
+	self.mantaClient = manta.createBinClient(opts); 
 
 	return;
     },
@@ -46,6 +46,16 @@ mantaObjectStore = _.extend(baseStore, {
     // - image is the express image object
     // - returns a promise which ultimately returns the full url to the uploaded image
     'save': function (image) {
+
+	// To match the fn( .. callback, errorback) protocol required by nodecb
+	var putWrapper = function (mantapath, inputstream, opts, cb, eb) {
+	    inputstream.on('end', function () {
+		cb('manta stream done.');
+	    });
+	    
+	    mantaClient.put(mantapath, inputstream, opts, eb);
+	}
+	    
         var saved = when.defer(),
             targetDir = this.getTargetDir(config().paths.manta.rootDir),
             targetFilename;
@@ -63,11 +73,8 @@ mantaObjectStore = _.extend(baseStore, {
 	      var imgstrm = fs.createReadStream(image.path),
 	      mantapath = '~~' + targetFilename;
 	      
-	      mantaClient.put(mantapath, imgstrm, opts, function (err) { 
-		  if (err) {
-		      console.log ('error in mantaClient.put: ' + err)
-		  }
-	      }); // how does 'nodefn.call' does this work?  Punting for now.
+	      nodecb.call(putWrapper, mantapath, imgstrm, opts); 
+
 	      return;
           }).then(function () {
             return nodefn.call(fs.unlink, image.path).otherwise(errors.logError);
@@ -109,5 +116,7 @@ mantaObjectStore = _.extend(baseStore, {
         return express['static'](config().paths.imagesPath, {maxAge: ONE_YEAR_MS});
     }
 });
+
+
 
 module.exports = mantaObjectStore;
